@@ -4,17 +4,17 @@
 #include <malloc.h>
 
 #include "scanner.cpp"
+#include "error.h"
 
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
 
-static void run(const char *source) {
-    Scanner *scanner = createScanner(source);
-    // TODO: Implement tokens
-    Token *tokens[512];
-    scanTokens(scanner, tokens);
-    destroyScanner(scanner);
+static void run(char *source) {
+    initScanner(source);
+    Token tokens[512] = {};
+    scanTokens(tokens);
 }
 
+// Script processing
 void runFile(const char *filePath) {
 
     // READ FILE CONTENTS INTO fileBuffer
@@ -42,13 +42,17 @@ void runFile(const char *filePath) {
 
     free(sourceBuffer);
 
+    // Check for errors
+    if (GlobalHadError) exit(65);
 }
 
-// TODO: Implement this to read one line at a time
-// and then execute it.
 void runPrompt() {
-    printf("Type script name: ");
-    char buf[64];
-    scanf_s("%63s", buf, (uint32_t)ARRAY_SIZE(buf));
-    runFile(buf);
+    puts(" --- Interactive prompt --- ");
+    char line[256];
+    while (true) {
+	printf(">> ");
+	fgets(line, 256, stdin);
+	run(line);
+	GlobalHadError = false;
+    }
 }

@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// ONLY FOR DEBUGGING
+#include <crtdbg.h>
+
 #include "lox.cpp"
 
 int main(int argc, char **argv) {
@@ -15,5 +18,7 @@ int main(int argc, char **argv) {
 	runPrompt();
     }
 
+    // ONLY FOR DEBUGGING
+    _CrtDumpMemoryLeaks();
     return 0;
 }
