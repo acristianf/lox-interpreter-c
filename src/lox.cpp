@@ -1,58 +1,60 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
 #include <malloc.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include "scanner.cpp"
 #include "error.h"
+#include "scanner.cpp"
 
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
 
 static void run(char *source) {
-    initScanner(source);
-    Token tokens[512] = {};
-    scanTokens(tokens);
+  initScanner(source);
+  Token tokens[512] = {};
+  scanTokens(tokens);
 }
 
-// Script processing
 void runFile(const char *filePath) {
 
-    // READ FILE CONTENTS INTO fileBuffer
-    FILE *fp;
-    fopen_s(&fp, filePath, "rb");
-    if(fp == NULL) {
-	perror("Error opening file.");
-	exit(74);
-    }
+  // READ FILE CONTENTS INTO fileBuffer
+  FILE *fp;
+  fopen_s(&fp, filePath, "rb");
+  if (fp == NULL) {
+    perror("Error opening file.");
+    exit(74);
+  }
 
-    fseek(fp, 0, SEEK_END);
-    size_t fileSize = ftell(fp);
-    rewind(fp);
+  fseek(fp, 0, SEEK_END);
+  size_t fileSize = ftell(fp);
+  rewind(fp);
 
-    char *sourceBuffer = (char *)malloc(sizeof(char)*(fileSize+1));
-    if (sourceBuffer == NULL) {
-	perror("Error allocating memory for file buffer.");
-	exit(74);
-    }
-    fread_s(sourceBuffer, fileSize, sizeof(char), fileSize/sizeof(char), fp);
-    sourceBuffer[fileSize] = '\0';
-    fclose(fp);
+  char *sourceBuffer = (char *)malloc(sizeof(char) * (fileSize + 1));
+  if (sourceBuffer == NULL) {
+    perror("Error allocating memory for file buffer.");
+    exit(74);
+  }
+  fread_s(sourceBuffer, fileSize, sizeof(char), fileSize / sizeof(char), fp);
+  sourceBuffer[fileSize] = '\0';
+  fclose(fp);
 
-    run(sourceBuffer);
+  run(sourceBuffer);
 
-    free(sourceBuffer);
+  free(sourceBuffer);
 
-    // Check for errors
-    if (GlobalHadError) exit(65);
+  // Check for errors
+  if (GlobalHadError)
+    exit(65);
 }
 
+// TODO: Implement this to read one line at a time
+// and then execute it.
 void runPrompt() {
-    puts(" --- Interactive prompt --- ");
-    char line[256];
-    while (true) {
-	printf(">> ");
-	fgets(line, 256, stdin);
-	run(line);
-	GlobalHadError = false;
-    }
+  puts(" --- Interactive prompt --- ");
+  char line[256];
+  while (true) {
+    printf(">> ");
+    fgets(line, 256, stdin);
+    run(line);
+    GlobalHadError = false;
+  }
 }

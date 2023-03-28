@@ -8,12 +8,10 @@ static bool GlobalHadError = false;
 
 // Error handling
 static void report(uint32_t line, const char *where, const char *msg) {
-    printf("[line %d] Error %s: %s", line, where, msg);
-    GlobalHadError = true;
+  printf("[line %d] Error %s: %s", line, where, msg);
+  GlobalHadError = true;
 };
 
-inline void error(uint32_t line, const char *msg) {
-    report(line, "", msg);
-};
+inline void error(uint32_t line, const char *msg) { report(line, "", msg); };
 
 #endif
