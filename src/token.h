@@ -7,7 +7,7 @@ typedef struct Token Token;
 
 Token createToken(TokenType tpye);
 
-// TODO: CHANGE TOKEN DEFINITION
+// NOTE: REFERENCE FOR IMPLEMENTATION IN C
 // https://github.com/zlliang/clox/blob/main/src/scanner.c
 struct Token {
   TokenType type;

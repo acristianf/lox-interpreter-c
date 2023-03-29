@@ -9,6 +9,7 @@
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
 
 static void run(char *source) {
+  initKeywords();
   initScanner(source);
   Token tokens[512] = {};
   scanTokens(tokens);

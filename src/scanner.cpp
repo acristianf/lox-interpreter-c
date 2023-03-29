@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <string.h>
 
 #include "error.h"
@@ -80,6 +81,68 @@ static void string() {
   advance();
 }
 
+static bool isWhiteSpace(char c) {
+  switch (c) {
+  case ' ':
+  case '\r':
+  case '\t':
+    return true;
+  case '\n': {
+    scanner.line++;
+    return true;
+  }
+  case '/':
+    if (peekNext() == '/') {
+      // A comment goes until the end of the line
+      while (peek() != '\n' && !isAtEnd()) {
+        advance();
+      }
+      return true;
+    }
+  default:
+    return false;
+  }
+}
+
+//static bool isValidBlockComment() {
+//  // Test for comment block
+//  for (;;) {
+//    if (isAtEnd()) {
+//      error(scanner.line, "Block comment unterminated.");
+//      return false;
+//    }
+//    if (peek() == '*') {
+//      advance();
+//      if (match('/'))
+//        return true;
+//    } else if (peek() == '\n') {
+//      scanner.line++;
+//    }
+//    advance();
+//  }
+//}
+
+static bool isAlpha(char c) {
+  return (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '_');
+}
+
+static bool isAlphaNumeric(char c) { return (isAlpha(c) || isDigit(c)); }
+
+static void identifier() {
+  while (isAlphaNumeric(peek()))
+    advance();
+}
+
+static TokenType identifierType() {
+  char text[32];
+  strncpy_s(text, scanner.start, scanner.current - scanner.start);
+  TokenType type = getKeywordType(text);
+  text[scanner.current - scanner.start] = '\0';
+  if (type == NULL)
+    type = IDENTIFIER;
+  return type;
+}
+
 static void number() {
   while (isDigit(peek()))
     advance();
@@ -93,29 +156,6 @@ static void number() {
   }
 }
 
-static bool isWhiteSpace(char c) {
-  switch (c) {
-  case ' ':
-  case '\r':
-  case '\t':
-    return true;
-  case '\n': {
-    scanner.line++;
-    return true;
-  }
-  case '/':
-    if (match('/')) {
-      // A comment goes until the end of the line
-      while (peek() != '\n' && !isAtEnd()) {
-        advance();
-      }
-      return true;
-    }
-  default:
-    return false;
-  }
-}
-
 static void skipWhitespace() {
   char c = peek();
   while (isWhiteSpace(c)) {
@@ -126,8 +166,28 @@ static void skipWhitespace() {
 
 static Token scanToken() {
   skipWhitespace();
+  scanner.start = scanner.current;
+
+  if (isAtEnd()) {
+    return makeToken(EOF_);
+  }
+
+  // TODO: IMPLEMENT BLOCK COMMENTS
+  // If we encounter a block comment check if it's valid
+  // if (peek() == '/' && peekNext() == '*' && !isValidBlockComment())
+  //   return makeToken(ERROR_TOKEN);
 
   char c = advance();
+
+  if (isDigit(c)) {
+    number();
+    return makeToken(NUMBER);
+  } else if (isAlpha(c)) {
+    identifier();
+    TokenType type = identifierType();
+    return makeToken(type);
+  }
+
   switch (c) {
   case '(':
     return makeToken(LEFT_PAREN);
@@ -163,31 +223,17 @@ static Token scanToken() {
     string();
     return makeToken(STRING);
   default:
-    if (isDigit(c)) {
-      number();
-      return makeToken(NUMBER);
-    } else {
-      error(scanner.line, "Unexpected character.");
-      return makeToken(ERROR_TOKEN);
-    }
+    error(scanner.line, "Unexpected character.");
+    return makeToken(ERROR_TOKEN);
   }
 }
 
 void scanTokens(Token tokens[]) {
-
   scanner.nTokens = 0;
 
-  Token token;
-  while (!isAtEnd()) {
-    scanner.start = scanner.current;
+  Token token = {};
+  while (token.type != EOF_) {
     token = scanToken();
     addToken(token, tokens);
   }
-
-  scanner.start = scanner.current;
-
-  Token eof = createToken(EOF_);
-
-  tokens[scanner.nTokens] = eof;
-  scanner.nTokens++;
 }
